@@ -263,7 +263,6 @@
 
   /* ---------------- admin: products ---------------- */
   function openProductModal(existing){
-    if(!isAdminUser()) return;
     state.modal = { type:'product', payload: existing ? {...existing} : { id:null, name:'', price:'', discount:0, stock:'', category:'', photo:'' } };
     render();
   }
@@ -483,7 +482,8 @@
     const q = state.search.trim().toLowerCase();
     const list = state.products.filter(p=>!q || p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q));
     return `
-    <div class="topbar"><div><h2>Shop floor</h2><p>Browse what's live. Request a removal if something needs to come down — the admin reviews every request.</p></div></div>
+    <div class="topbar"><div><h2>Shop floor</h2><p>Browse what's live. Request a removal if something needs to come down — the admin reviews every request.</p></div>
+    <button class="btn btn-primary" onclick="App.openProductModal()">＋ Add product</button></div>
     <div class="toolbar"><input class="search-input" placeholder="Search products…" value="${escapeHtml(state.search)}" oninput="App.onSearch(this.value)"/></div>
     ${list.length? `<div class="grid">${list.map(p=>productCard(p,{
         actionsHtml: `<button class="btn btn-danger btn-sm" style="flex:1" onclick='App.submitDeleteRequest(${JSON.stringify(p).replace(/'/g,"&#39;")})'>Request removal</button>`
@@ -609,9 +609,10 @@
     }
     if(m.type==='product'){
       const p = m.payload; const isEdit = !!p.id;
+      const staffNote = !isAdminUser() && !isEdit ? 'This request is sent to the admin for approval before it goes live.' : 'Goes live on the shop floor immediately.';
       return `<div class="modal-backdrop" onclick="if(event.target===this) App.closeModal()"><div class="modal"><div class="modal-inner-wrap">
           <button class="modal-close" onclick="App.closeModal()">✕</button>
-          <h3>${isEdit?'Edit product':'Add product'}</h3><p class="modal-sub">${isEdit?'Update stock, price or discount.':'Goes live on the shop floor immediately.'}</p>
+          <h3>${isEdit?'Edit product':'Add product'}</h3><p class="modal-sub">${isEdit?'Update stock, price or discount.':staffNote}</p>
           <form onsubmit="App.onSaveProductDirect(event, ${isEdit})">
             ${photoFieldHtml(p.photo)}
             <div class="field"><label>Product name</label><input name="name" value="${escapeHtml(p.name)}" placeholder="e.g. Oversized Cotton Tee" required/></div>
@@ -645,7 +646,7 @@
     if(state.tab==='products') body = isAdmin? viewProductsAdmin() : viewProductsStaff();
     else if(state.tab==='team' && isAdmin) body = viewTeam();
     else if(state.tab==='requests' && isAdmin) body = viewRequestsAdmin();
-    else if(state.tab==='add' && !isAdmin) body = viewAddProduct();
+    else if(state.tab==='add') body = isAdmin ? viewProductsAdmin() : viewAddProduct();
     else if(state.tab==='mine' && !isAdmin) body = viewMine();
     else { state.tab='products'; body = isAdmin? viewProductsAdmin() : viewProductsStaff(); }
     root.innerHTML = `<div class="shell">${sidebarHtml()}<main class="main">${body}</main></div>${mobileNavHtml()}${viewModal()}<div id="toast-stack" class="toast-stack"></div>`;
