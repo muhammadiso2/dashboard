@@ -212,7 +212,7 @@
   }
 
   async function loadAll(){
-    const isAdmin = state.user.role === 'admin';
+    const isAdmin = isAdminUser();
     const calls = [ api('/api/products').then(d=>state.products=d.products) ];
     if(isAdmin) calls.push(api('/api/workers').then(d=>state.workers=d.workers));
     calls.push(api('/api/requests').then(d=>state.requests=d.requests));
