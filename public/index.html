@@ -154,6 +154,10 @@
     tab:'products', modal:null, toasts:[], search:'', loginError:'', busy:false, _draft:null
   };
 
+  function isAdminUser(){
+    return state.user && String(state.user.role || '').toLowerCase() === 'admin';
+  }
+
   function toast(msg, type){
     const t = { id:Math.random().toString(36).slice(2), msg, type: type||'default' };
     state.toasts.push(t); renderToasts();
@@ -259,7 +263,7 @@
 
   /* ---------------- admin: products ---------------- */
   function openProductModal(existing){
-    if(!state.user || state.user.role !== 'admin') return;
+    if(!isAdminUser()) return;
     state.modal = { type:'product', payload: existing ? {...existing} : { id:null, name:'', price:'', discount:0, stock:'', category:'', photo:'' } };
     render();
   }
@@ -269,7 +273,7 @@
     const p = state.modal.payload;
     const body = { name: form.name.trim(), price: form.price, discount: form.discount, stock: form.stock, category: form.category.trim(), photo: p.photo };
     try{
-      if(!state.user || state.user.role !== 'admin'){
+      if(!isAdminUser()){
         if(isEdit){
           throw new Error('Admin access required to edit products.');
         }

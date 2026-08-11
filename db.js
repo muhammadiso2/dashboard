@@ -44,8 +44,9 @@ function uid() {
 
 // ---------- seed ----------
 function ensureSeed() {
-  const workers = readJson(FILES.workers, null);
-  if (!workers || !workers.length) {
+  const workers = readJson(FILES.workers, []);
+  const hasAdmin = workers.some((w) => String(w.username || '').trim().toLowerCase() === 'admin');
+  if (!hasAdmin) {
     const seeded = [
       {
         id: uid(),
@@ -54,6 +55,7 @@ function ensureSeed() {
         passwordHash: bcrypt.hashSync('admin123', 10),
         role: 'admin',
       },
+      ...workers,
     ];
     writeJsonSync(FILES.workers, seeded);
     console.log('Seeded default admin account -> username: admin / password: admin123');
