@@ -259,6 +259,7 @@
 
   /* ---------------- admin: products ---------------- */
   function openProductModal(existing){
+    if(!state.user || state.user.role !== 'admin') return;
     state.modal = { type:'product', payload: existing ? {...existing} : { id:null, name:'', price:'', discount:0, stock:'', category:'', photo:'' } };
     render();
   }
@@ -268,6 +269,14 @@
     const p = state.modal.payload;
     const body = { name: form.name.trim(), price: form.price, discount: form.discount, stock: form.stock, category: form.category.trim(), photo: p.photo };
     try{
+      if(!state.user || state.user.role !== 'admin'){
+        if(isEdit){
+          throw new Error('Admin access required to edit products.');
+        }
+        await submitAddRequest({ ...body, photo: p.photo });
+        closeModal();
+        return;
+      }
       if(isEdit){
         const data = await api('/api/products/' + p.id, { method:'PUT', body });
         state.products = state.products.map(x=>x.id===p.id? data.product : x);
