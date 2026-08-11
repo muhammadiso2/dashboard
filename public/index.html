@@ -433,7 +433,7 @@
 
   function sidebarHtml(){
     const pendingCount = state.requests.filter(r=>r.status==='pending').length;
-    const isAdmin = state.user.role==='admin';
+    const isAdmin = isAdminUser();
     const items = isAdmin
       ? tabButton('products','Products','🧵') + tabButton('team','Team','👥') + tabButton('requests','Requests','📥', pendingCount||null)
       : tabButton('products','Shop floor','🧵') + tabButton('add','Add product','➕') + tabButton('mine','My requests','📄');
@@ -454,7 +454,7 @@
   }
   function mobileNavHtml(){
     const pendingCount = state.requests.filter(r=>r.status==='pending').length;
-    const isAdmin = state.user.role==='admin';
+    const isAdmin = isAdminUser();
     const items = isAdmin
       ? [['products','Shop','🧵'],['team','Team','👥'],['requests','Requests','📥',pendingCount]]
       : [['products','Shop','🧵'],['add','Add','➕'],['mine','Mine','📄']];
@@ -640,7 +640,7 @@
     const root = document.getElementById('root');
     if(!state.booted){ root.innerHTML = `<div class="boot"><div class="mark">✦</div><div class="spinner"></div></div>`; return; }
     if(!state.user){ root.innerHTML = viewLogin() + `<div id="toast-stack" class="toast-stack"></div>`; renderToasts(); return; }
-    const isAdmin = state.user.role==='admin';
+    const isAdmin = isAdminUser();
     let body = '';
     if(state.tab==='products') body = isAdmin? viewProductsAdmin() : viewProductsStaff();
     else if(state.tab==='team' && isAdmin) body = viewTeam();
