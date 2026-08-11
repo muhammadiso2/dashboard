@@ -34,6 +34,10 @@ function writeJson(file, data) {
   return next;
 }
 
+function writeJsonSync(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+}
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
@@ -51,11 +55,11 @@ function ensureSeed() {
         role: 'admin',
       },
     ];
-    writeJson(FILES.workers, seeded);
+    writeJsonSync(FILES.workers, seeded);
     console.log('Seeded default admin account -> username: admin / password: admin123');
   }
-  if (!fs.existsSync(FILES.products)) writeJson(FILES.products, []);
-  if (!fs.existsSync(FILES.requests)) writeJson(FILES.requests, []);
+  if (!fs.existsSync(FILES.products)) writeJsonSync(FILES.products, []);
+  if (!fs.existsSync(FILES.requests)) writeJsonSync(FILES.requests, []);
 }
 ensureSeed();
 
