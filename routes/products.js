@@ -3,7 +3,6 @@ const db = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
-router.use(requireAuth);
 
 function clean(body) {
   return {

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier Customer Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--void:#170026; --surface:#3A1160; --ink:#F6EFFF; --ink-dim:#C6B3E6; --gold:#D4AF37; --radius:14px;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:0;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%, #3a1160 0%, transparent 60%), radial-gradient(1000px 500px at 110% 10%, #4a1078 0%, transparent 55%), var(--void); color:var(--ink); font-family:'Lora', serif;}
+  .page{max-width:1120px; margin:0 auto; padding:28px 20px 40px;}
+  .header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:24px;}
+  .title{margin:0; font-size:2.2rem; letter-spacing:.03em;}
+  .subtitle{margin:6px 0 0;color:var(--ink-dim); font-size:1rem; max-width:640px;}
+  .link{display:inline-flex; align-items:center; gap:8px; color:var(--ink); text-decoration:none; border:1px solid rgba(255,255,255,0.12); padding:10px 16px; border-radius:12px; transition:background .2s;}
+  .link:hover{background:rgba(255,255,255,0.06);}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px;}
+  .card{background:linear-gradient(180deg, var(--surface), #3d135a); border:1px solid rgba(255,255,255,0.08); border-radius:18px; overflow:hidden; display:flex; flex-direction:column;}
+  .photo{width:100%; aspect-ratio:4/3; background:#24063f center/cover no-repeat; display:flex; align-items:center; justify-content:center; color:#6b5387; font-size:12px;}
+  .body{padding:16px; display:flex; flex-direction:column; gap:10px;}
+  .name{font-size:1.05rem; margin:0; color:var(--ink);}
+  .meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .price{font-size:1.2rem; font-weight:700; color:var(--gold);}
+  .old{font-size:0.9rem; color:#b38fe0; text-decoration:line-through;}
+  .stock{font-size:0.87rem; color:var(--ink-dim);}
+  .badge{background:rgba(255,255,255,0.08); color:var(--ink); padding:4px 10px; font-size:0.8rem; border-radius:999px;}
+  .empty{padding:60px 20px; text-align:center; color:var(--ink-dim); border:1px dashed rgba(255,255,255,0.16); border-radius:18px;}
+  .footer{margin-top:26px; color:var(--ink-dim); font-size:0.95rem;}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div>
+      <h1 class="title">Customer Menu</h1>
+      <p class="subtitle">Browse our current shop floor. New items added by staff or admin appear here automatically.</p>
+    </div>
+    <a class="link" href="/">Return to staff console</a>
+  </header>
+  <div id="content"></div>
+  <div class="footer">Reload the page to refresh the customer menu. Products are served from the same backend as the staff console.</div>
+</div>
+<script>
+  const content = document.getElementById('content');
+  async function loadProducts(){
+    content.innerHTML = '<div class="empty">Loading products…</div>';
+    try{
+      const res = await fetch('/api/products');
+      if(!res.ok) throw new Error('Failed to load products.');
+      const data = await res.json();
+      const products = data.products || [];
+      if(!products.length){
+        content.innerHTML = '<div class="empty">No products are currently available. Please check back soon.</div>';
+        return;
+      }
+      content.innerHTML = '<div class="grid">' + products.map(p => {
+        const priceNow = p.price && p.price.toLocaleString ? p.price.toLocaleString(undefined, {style:'currency',currency:'USD'}) : '$' + p.price;
+        const oldPrice = p.discount ? Math.max(0, p.price / (1 - p.discount / 100)) : null;
+        return `<article class="card">
+          <div class="photo" style="background-image:url('${p.photo||'/uploads/default.jpg'}');">${p.photo? '': 'No photo'}</div>
+          <div class="body">
+            <h2 class="name">${p.name || 'Unnamed product'}</h2>
+            <div class="meta">
+              <span class="price">${priceNow}</span>
+              ${p.discount?`<span class="badge">${p.discount}% off</span>`:''}
+            </div>
+            <div class="meta"><span class="stock">${p.stock > 0 ? p.stock + ' in stock' : 'Out of stock'}</span><span class="old">${oldPrice ? oldPrice.toLocaleString(undefined, {style:'currency',currency:'USD'}) : ''}</span></div>
+            <div style="color:var(--ink-dim);font-size:0.95rem;line-height:1.45;">Category: ${p.category || 'General'}</div>
+          </div>
+        </article>`;
+      }).join('') + '</div>';
+    }catch(err){
+      content.innerHTML = `<div class="empty">${err.message}</div>`;
+    }
+  }
+  loadProducts();
+</script>
+</body>
+</html>
