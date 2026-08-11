@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: atelier-console-backend
+    env: node
+    branch: main
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
